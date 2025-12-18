@@ -1,25 +1,36 @@
 import os
+import random
 
-maze = [
+""" maze = [
     ["#", "#", "#", "#", "#", "#", "#"],
     ["#", " ", " ", " ", "#", " ", "#"],
     ["#", " ", "#", " ", "#", " ", "#"],
     ["#", " ", "#", " ", " ", " ", "#"],
     ["#", "#", "#", "#", "#", "#", "#"]
-]
+] """
+
+def create_empty_maze(rows, cols):
+    maze = []
+    for _ in range(rows):
+        maze.append(["#"] * cols)
+    return maze
+
+
+maze = create_empty_maze(11,21)
 
 player_pos = (1,1)
+exit_pos = (3,5)
 maze[player_pos[0]][player_pos[1]] = "P"
+maze[exit_pos[0]][exit_pos[1]] = "E"
 
 def draw_maze(maze):
     for row in maze:
         print("".join(row))
 
-
 def move_player(maze, player_pos, new_row, new_col):
     row,col = player_pos
 
-    if maze [new_row][new_col] != "#":
+    if maze [new_row][new_col] in (" ","E"):
         maze[row][col] = " "
         maze[new_row][new_col] = "P"
         return (new_row, new_col)
@@ -56,3 +67,9 @@ while True:
 
     new_row, new_col = calculate_new_position(player_pos, move)
     player_pos = move_player(maze, player_pos, new_row, new_col)
+
+    if player_pos == exit_pos:
+        clear_console()
+        draw_maze(maze)
+        print("¡Felicidades! Has salido del laberinto.")
+        break
