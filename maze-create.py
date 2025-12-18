@@ -26,9 +26,33 @@ def move_player(maze, player_pos, new_row, new_col):
     
     return player_pos
 
-
 def clear_console():
     os.system("cls")
 
-clear_console()
-draw_maze(maze)
+def get_move():
+    move = input("Mover (W/A/S/D, Q para salir): ").lower()
+    return move 
+
+def calculate_new_position(player_pos, move):
+    row, col = player_pos
+    if move == "w":
+        return row - 1, col
+    elif move == "s":
+        return row + 1, col
+    elif move == "a":
+        return row, col - 1
+    elif move == "d":
+        return row, col + 1
+    return row,col
+
+while True:
+    clear_console()
+    draw_maze(maze)
+
+    move = get_move()
+
+    if move == "q":
+        break
+
+    new_row, new_col = calculate_new_position(player_pos, move)
+    player_pos = move_player(maze, player_pos, new_row, new_col)
