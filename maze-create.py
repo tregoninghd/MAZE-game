@@ -1,9 +1,23 @@
 import os
 import random
 
+TILE_RENDER = {
+    "#": "█",   # pared
+    " ": " ",   # camino
+    "P": "H",   # jugador
+    "E": "X"    # salida
+    
+}
+
+
+
 def draw_maze(maze): # Función para dibujar el laberinto
     for row in maze:
-        print("".join(row)) 
+        rendered_row = ""
+        for cell in row:
+            rendered_row += TILE_RENDER.get(cell, "?")# Renderizar cada celda del laberinto
+        print(rendered_row)
+
 
 def create_empty_maze(rows, cols):  # Función para crear un laberinto vacío
     maze = []
