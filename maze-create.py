@@ -9,7 +9,7 @@ TILE_RENDER = {
     
 }
 
-quit
+
 
 def draw_maze(maze): # Función para dibujar el laberinto
     for row in maze:
