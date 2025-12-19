@@ -1,31 +1,35 @@
+# Librerias usadas
 import os
 import random
 
+WALL = "wall"
+FLOOR = "floor"
+PLAYER = "player"
+EXIT = "exit"
+
+
 TILE_RENDER = {
-    "#": "█",   # pared
-    " ": " ",   # camino
-    "P": "H",   # jugador
-    "E": "X"    # salida
+    WALL : "█",   # pared
+    FLOOR : " ",   # camino
+    PLAYER : "H",   # jugador
+    EXIT : "X"    # salida
     
 }
-
-
-
-def draw_maze(maze): # Función para dibujar el laberinto
-    for row in maze:
-        rendered_row = ""
-        for cell in row:
-            rendered_row += TILE_RENDER.get(cell, "?")# Renderizar cada celda del laberinto
-        print(rendered_row)
-
 
 def create_empty_maze(rows, cols):  # Función para crear un laberinto vacío
     maze = []
     for _ in range(rows):
-        maze.append(["#"] * cols)
+        row = []
+        for _ in range (cols):
+            row.append({"type": WALL})
+        maze.append(row)
     return maze
 
+
+
+
 def generate_maze_dfs(maze, row, col):
+    maze[row][col]["type"] = FLOOR
     directions = [(2, 0), (-2, 0), (0, 2), (0, -2)] # Movimientos posibles (abajo, arriba, derecha, izquierda)
     random.shuffle(directions) # Mezclar las direcciones para hacer el laberinto aleatorio
 
@@ -36,18 +40,29 @@ def generate_maze_dfs(maze, row, col):
         if(
             1 <= new_row < len(maze) - 1 and # Asegurarse de que la nueva posición esté dentro de los límites del laberinto
             1 <= new_col < len(maze[0]) - 1 and 
-            maze[new_row][new_col] == "#"
+            maze[new_row][new_col]["type"] == WALL
         ):
-            maze[row + dr // 2][col + dc // 2] = " " # Eliminar la pared entre las celdas
-            maze[new_row][new_col] = " " # Marcar la nueva celda como camino
+            maze[row + dr // 2][col + dc // 2]["type"] = FLOOR # Eliminar la pared entre las celdas
+            maze[new_row][new_col]["type"] = FLOOR # Marcar la nueva celda como camino
             generate_maze_dfs(maze, new_row, new_col) # Llamada recursiva para continuar generando el laberinto
+
+
+def draw_maze(maze): # Función para dibujar el laberinto
+    for row in maze:
+        rendered_row = ""
+        for cell in row:
+            cell_type = cell["type"]
+            if cell_type not in TILE_RENDER:
+                print("TIPO DESCONOCIDO:",repr(cell_type))
+            rendered_row += TILE_RENDER.get(cell_type, "?")# Renderizar cada celda del laberinto
+        print(rendered_row)
 
 
 def move_player(maze, player_pos, new_row, new_col): # Función para mover al jugador
     row,col = player_pos
-    if maze [new_row][new_col] in (" ","E"):
-        maze[row][col] = " " # Limpiar la posición anterior del jugador
-        maze[new_row][new_col] = "P" # Mover al jugador a la nueva posición
+    if maze [new_row][new_col]["type"] in (FLOOR, EXIT):
+        maze[row][col]["type"] = FLOOR # Limpiar la posición anterior del jugador
+        maze[new_row][new_col]["type"] = PLAYER # Mover al jugador a la nueva posición
         return (new_row, new_col)    
     return player_pos
 
@@ -72,20 +87,24 @@ def calculate_new_position(player_pos, move):
 
 def play_round(rows, cols):
     maze = create_empty_maze(rows,cols)
-    maze[1][1] = " "
+
+    # Marca la celda inicial como camino
+    maze[1][1]["type"] = FLOOR
     generate_maze_dfs(maze, 1,1)
 
     exit_pos = (len(maze)-2, len(maze[0])-2)
-    while maze[exit_pos[0]][exit_pos[1]] == "#":
+
+    # Aquí se asegura que la salida esté en un camino
+    while maze[exit_pos[0]][exit_pos[1]] == WALL:
         maze = create_empty_maze(rows,cols)
-        maze[1][1] = " "
+        maze[1][1]["type"] = FLOOR
         generate_maze_dfs(maze, 1,1)
 
     player_pos = (1,1) # Posición inicial del jugador
-    maze[player_pos[0]][player_pos[1]] = "P"
+    maze[player_pos[0]][player_pos[1]]["type"] = PLAYER
 
     exit_pos = (len(maze)-2, len(maze[0])-2) # Posición de la salida
-    maze[exit_pos[0]][exit_pos[1]] = "E"
+    maze[exit_pos[0]][exit_pos[1]]["type"] = EXIT
 
     while True:
         clear_console()
@@ -104,10 +123,12 @@ def play_round(rows, cols):
             input("Presiona ENTER para continuar a la siguiente ronda...")
             return True # Ronda completada
 
-round_number = 1
+#MAIN LOOP DEL JUEGO
 
-rows = 11
-cols = 21
+round_number = 1  #Luego debo de anotar incrementos por ronda
+
+rows = 21
+cols = 51
 
 while True:
     won = play_round(rows, cols)
