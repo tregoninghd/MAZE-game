@@ -1,16 +1,6 @@
 import os
 import random
 
-""" maze = [      # Ejemplo de laberinto predefinido
-    ["#", "#", "#", "#", "#", "#", "#"],
-    ["#", " ", " ", " ", "#", " ", "#"],
-    ["#", " ", "#", " ", "#", " ", "#"],
-    ["#", " ", "#", " ", " ", " ", "#"],
-    ["#", "#", "#", "#", "#", "#", "#"]
-] """
-
-
-
 def draw_maze(maze): # Función para dibujar el laberinto
     for row in maze:
         print("".join(row)) 
@@ -20,7 +10,6 @@ def create_empty_maze(rows, cols):  # Función para crear un laberinto vacío
     for _ in range(rows):
         maze.append(["#"] * cols)
     return maze
-
 
 def generate_maze_dfs(maze, row, col):
     directions = [(2, 0), (-2, 0), (0, 2), (0, -2)] # Movimientos posibles (abajo, arriba, derecha, izquierda)
@@ -39,18 +28,6 @@ def generate_maze_dfs(maze, row, col):
             maze[new_row][new_col] = " " # Marcar la nueva celda como camino
             generate_maze_dfs(maze, new_row, new_col) # Llamada recursiva para continuar generando el laberinto
 
-
-maze = create_empty_maze(15,31) # Crear un laberinto vacío
-
-maze[1][1] = " "
-generate_maze_dfs(maze, 1, 1)
-
-
-player_pos = (1,1) # Posición inicial del jugador
-maze[player_pos[0]][player_pos[1]] = "P"
-
-exit_pos = (len(maze)-2, len(maze[0])-2) # Posición de la salida
-maze[exit_pos[0]][exit_pos[1]] = "E"
 
 def move_player(maze, player_pos, new_row, new_col): # Función para mover al jugador
     row,col = player_pos
@@ -79,20 +56,54 @@ def calculate_new_position(player_pos, move):
         return row, col + 1
     return row,col
 
-while True:
-    clear_console()
-    draw_maze(maze)
+def play_round(rows, cols):
+    maze = create_empty_maze(rows,cols)
+    maze[1][1] = " "
+    generate_maze_dfs(maze, 1,1)
 
-    move = get_move()
+    exit_pos = (len(maze)-2, len(maze[0])-2)
+    while maze[exit_pos[0]][exit_pos[1]] == "#":
+        maze = create_empty_maze(rows,cols)
+        maze[1][1] = " "
+        generate_maze_dfs(maze, 1,1)
 
-    if move == "q":
-        break
+    player_pos = (1,1) # Posición inicial del jugador
+    maze[player_pos[0]][player_pos[1]] = "P"
 
-    new_row, new_col = calculate_new_position(player_pos, move) # Calcular la nueva posición del jugador
-    player_pos = move_player(maze, player_pos, new_row, new_col) # Mover al jugador
+    exit_pos = (len(maze)-2, len(maze[0])-2) # Posición de la salida
+    maze[exit_pos[0]][exit_pos[1]] = "E"
 
-    if player_pos == exit_pos:
+    while True:
         clear_console()
         draw_maze(maze)
-        print("¡Felicidades! Has salido del laberinto.")
+
+        move = get_move()
+        if move == "q":
+            return False # Salir del juego
+
+        new_row, new_col = calculate_new_position(player_pos, move) # Calcular la nueva posición del jugador
+        player_pos = move_player(maze, player_pos, new_row, new_col) # Mover al jugador
+
+        if player_pos == exit_pos:
+            draw_maze(maze)
+            print("¡Ronda Completada!")
+            input("Presiona ENTER para continuar a la siguiente ronda...")
+            return True # Ronda completada
+
+round_number = 1
+
+rows = 11
+cols = 21
+
+while True:
+    won = play_round(rows, cols)
+
+    if not won:
+        print("\nJuego terminado.")
         break
+
+    round_number += 1
+    rows += 2
+    cols += 4
+    print(f"\n¡Bienvenido a la ronda {round_number}!")
+    input("Presiona ENTER para empezar la ronda...")
